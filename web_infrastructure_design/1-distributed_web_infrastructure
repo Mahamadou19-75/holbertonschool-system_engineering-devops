@@ -1,33 +1,36 @@
 ```mermaid
+flowchart TD
+    User["👤 User\nwww.foobar.com"]
+    DNS["🌐 DNS\nwww → 8.8.8.8\n(A Record)"]
 
-graph TD
-    User[User Browser] -->|1. DNS Query| DNS[DNS Resolver]
-    DNS -->|2. Returns IP| User
-    User -->|3. HTTP Request| HAProxy[HAProxy Load Balancer]
+    LB["⚖️ HAProxy\nLoad Balancer\nRound Robin"]
 
-    subgraph Server_1 [Web App Server 1]
-        Nginx1[Nginx Web Server]
-        App1[Application Server]
-        Code1[Codebase]
-        DB_Master[(MySQL Primary)]
+    subgraph Server1["🖥️ SERVER 1"]
+        Nginx1["🌍 Nginx"]
+        App1["⚙️ App Server"]
+        Code1["📁 Code Base"]
+        Nginx1 --> App1 --> Code1
     end
 
-    subgraph Server_2 [Web App Server 2]
-        Nginx2[Nginx Web Server]
-        App2[Application Server]
-        Code2[Codebase]
-        DB_Slave[(MySQL Replica)]
+    subgraph Server2["🖥️ SERVER 2"]
+        Nginx2["🌍 Nginx"]
+        App2["⚙️ App Server"]
+        Code2["📁 Code Base"]
+        Nginx2 --> App2 --> Code2
     end
 
-    HAProxy -->|4a. Forward| Nginx1
-    HAProxy -->|4b. Forward| Nginx2
+    subgraph DB["🗄️ Database Cluster"]
+        Primary[("🟢 MySQL Primary\nREAD + WRITE")]
+        Replica[("🔵 MySQL Replica\nREAD only")]
+        Primary -->|"Replication"| Replica
+    end
 
-    Nginx1 --> App1
-    App1 --> Code1
-    App1 --> DB_Master
-
-    Nginx2 --> App2
-    App2 --> Code2
-    App2 --> DB_Slave
-
-    DB_Master -->|5. Replication| DB_Slave
+    User -->|"1. DNS Query"| DNS
+    DNS -->|"2. Returns 8.8.8.8"| User
+    User -->|"3. HTTP Request"| LB
+    LB -->|"Active-Active"| Server1
+    LB -->|"Active-Active"| Server2
+    App1 --> Primary
+    App2 --> Primary
+    App1 -.-> Replica
+    App2 -.-> Replica
