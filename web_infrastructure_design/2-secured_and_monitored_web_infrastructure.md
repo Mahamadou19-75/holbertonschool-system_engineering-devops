@@ -1,6 +1,4 @@
 ```mermaid
-
-graph TD
 flowchart TD
     User["👤 User\nwww.foobar.com"]
     DNS["🌐 DNS\nA Record → 8.8.8.8"]
