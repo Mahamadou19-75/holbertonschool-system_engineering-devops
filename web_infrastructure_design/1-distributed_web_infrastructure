@@ -1,67 +1,33 @@
 ```mermaid
+
 graph TD
-    %% Base Styles
-    classDef internet fill:#1f1f1f,stroke:#333,stroke-width:1px,color:#fff;
-    classDef lb fill:#1a2a3a,stroke:#00bcff,stroke-width:2px,color:#fff;
-    classDef serverZone fill:#2d1e18,stroke:#c77d60,stroke-width:2px,color:#fff;
-    classDef component fill:#222,stroke:#555,stroke-width:1px,color:#ddd;
-    classDef dbPrimary fill:#1b3a1b,stroke:#2ecc71,stroke-width:2px,color:#fff;
-    classDef dbReplica fill:#3a2f1b,stroke:#f1c40f,stroke-width:2px,color:#fff;
+    User[User Browser] -->|1. DNS Query| DNS[DNS Resolver]
+    DNS -->|2. Returns IP| User
+    User -->|3. HTTP Request| HAProxy[HAProxy Load Balancer]
 
-    %% External
-    User["💻 User Browser"]
-    DNS["🌐 DNS Resolver<br>www.foobar.com &rarr; LB IP"]
-
-    %% Load Balancer
-    subgraph LB_Zone["⚖️ Load Balancer Server"]
-        HAProxy["HAProxy<br>(Configured: Round Robin)"]
+    subgraph Server_1 [Web App Server 1]
+        Nginx1[Nginx Web Server]
+        App1[Application Server]
+        Code1[Codebase]
+        DB_Master[(MySQL Primary)]
     end
 
-    %% Server 1
-    subgraph Server1["🖥️ Web App Server 1"]
-        Nginx1["Nginx Web Server"]
-        App1["Application Server"]
-        Code1["Codebase (App Files)"]
-        DB_Master[("MySQL Database<br>(Primary / Master)")]
+    subgraph Server_2 [Web App Server 2]
+        Nginx2[Nginx Web Server]
+        App2[Application Server]
+        Code2[Codebase]
+        DB_Slave[(MySQL Replica)]
     end
 
-    %% Server 2
-    subgraph Server2["🖥️ Web App Server 2"]
-        Nginx2["Nginx Web Server"]
-        App2["Application Server"]
-        Code2["Codebase (App Files)"]
-        DB_Slave[("MySQL Database<br>(Replica / Slave)")]
-    end
+    HAProxy -->|4a. Forward| Nginx1
+    HAProxy -->|4b. Forward| Nginx2
 
-    %% Network Flows
-    User -->|1. DNS Query| DNS
-    DNS -->|2. Returns LB IP| User
-    User -->|3. HTTP Request| HAProxy
-
-    %% LB Distribution
-    HAProxy -->|4a. Distributes Request| Nginx1
-    HAProxy -->|4b. Distributes Request| Nginx2
-
-    %% Internal Server 1 Flow
     Nginx1 --> App1
     App1 --> Code1
-    App1 -->|Read / Write| DB_Master
+    App1 --> DB_Master
 
-    %% Internal Server 2 Flow
     Nginx2 --> App2
     App2 --> Code2
-    App2 -->|Read Only| DB_Slave
+    App2 --> DB_Slave
 
-    %% Database Replication
-    DB_Master -->|5. Asynchronous Replication| DB_Slave
-
-    %% Apply Styles
-    style LB_Zone fill:#132230,stroke:#00bcff,stroke-dasharray: 5 5
-    style Server1 fill:#241915,stroke:#c77d60
-    style Server2 fill:#241915,stroke:#c77d60
-    
-    class User,DNS internet;
-    class HAProxy lb;
-    class Nginx1,Nginx2,App1,App2,Code1,Code2 component;
-    class DB_Master dbPrimary;
-    class DB_Slave dbReplica;
+    DB_Master -->|5. Replication| DB_Slave
