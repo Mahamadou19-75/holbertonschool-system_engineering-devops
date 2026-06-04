@@ -1,3 +1,4 @@
+```mermaid
 flowchart TD
     User["👤 User<br>www.foobar.com"]
 
