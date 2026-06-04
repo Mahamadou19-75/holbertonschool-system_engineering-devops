@@ -21,7 +21,6 @@ flowchart TD
         DB[("🟢 MySQL<br>Stores & manages data")]
     end
 
-    %% Connexions corrigées pour GitHub
     User -->|"HTTPS"| LB1
     User -->|"HTTPS"| LB2
     LB1 --> Nginx
