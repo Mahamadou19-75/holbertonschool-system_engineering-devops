@@ -34,8 +34,7 @@ flowchart TD
 
     Cloud["☁️ Sumologic\nMonitoring Service"]
 
-    User -->|"HTTPS"| DNS
-    DNS --> User
-    User -->|"HTTPS 443"| FW1
-    FW1 --> LB
-    LB -->
+    User -->|"HTTPS"| LB1
+    User -->|"HTTPS"| LB2
+    LB1 --> WebServer
+    LB2 --> WebServer
